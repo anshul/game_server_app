@@ -18,6 +18,7 @@ describe Game do
     it { should be_valid }
     its(:first_player) { should be_a User }
     its(:second_player) { should be_nil}
+    it { should_not be_startable }
   end
 
   context "with two players" do
@@ -27,6 +28,28 @@ describe Game do
     it { should be_valid }
     its(:first_player) { should be player1 }
     its(:second_player) { should be player2 }
+    it { should be_startable }
+
+    context "when it has started" do
+      subject { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2 ; g.start! }}
+      it { should be_valid }
+      it { should be_started }
+      it { should_not be_startable }
+      its(:current_player) { should be player1 }
+      context "when moves are made" do
+        context "with first move" do
+          let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
+          before(:each) { subject.add_move(first_move) }
+          it { should  be_valid  }
+          its("moves.size") { should be 1 } 
+          its(:current_player) { should be player2 } 
+          it { should_not be_complete }
+          its(:winner) { should  be_nil }
+          its(:result) { should be_nil }
+        end
+      end
+    end
+
   end
 
   context "with three players" do
