@@ -2,30 +2,36 @@ require 'spec_helper'
 
 describe Game do
 
-  before :each do
-    @game = FactoryGirl.build(:game)
+  
+  describe "#board" do
+    subject { FactoryGirl.build(:game).board}
+    it { should be_a Board }
+    it { should be_empty}
+  end
+  context "with zero players" do
+    subject { FactoryGirl.build(:game) }
+    it { should_not be_valid }
   end
 
-  it "should not be valid with 0 user" do
-    @game.should_not be_valid
+  context "with one player" do
+    subject { FactoryGirl.build(:game).tap { |g| 1.times { g.users <<  FactoryGirl.create(:user) } } }
+    it { should be_valid }
+    its(:first_player) { should be_a User }
+    its(:second_player) { should be_nil}
   end
 
-  it "should be valid with 1 user" do
-    @game.users << FactoryGirl.create(:user)
-    @game.should be_valid
+  context "with two players" do
+    let!(:player1) { FactoryGirl.create(:user) }
+    let!(:player2) { FactoryGirl.create(:user) }
+    subject { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2  }}
+    it { should be_valid }
+    its(:first_player) { should be player1 }
+    its(:second_player) { should be player2 }
   end
 
-  it "should be valid with 2 users" do
-    @game.users << FactoryGirl.create(:user)
-    @game.users << FactoryGirl.create(:user)
-    @game.should be_valid
-  end
-
-  it "should not be valid with 3 users" do
-    @game.users << FactoryGirl.create(:user)
-    @game.users << FactoryGirl.create(:user)
-    @game.users << FactoryGirl.create(:user)
-    @game.should_not be_valid 
+  context "with three players" do
+    subject { FactoryGirl.build(:game).tap { |g| 3.times { g.users <<  FactoryGirl.create(:user) } } }
+    it { should_not be_valid }
   end
 
 
