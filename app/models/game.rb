@@ -4,6 +4,18 @@ class Game < ActiveRecord::Base
 
   validate :validate_user_count
 
+  def startable?
+    return true if users.size == 2
+    false
+  end
+
+  def start!
+  end
+
+  def started?
+    true
+  end
+
   def board
     Board.new
   end

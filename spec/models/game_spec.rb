@@ -19,6 +19,20 @@ describe Game do
     its(:first_player) { should be_a User }
     its(:second_player) { should be_nil}
     it { should_not be_startable }
+    context "when trying to start" do
+      before(:each) { subject.start! }
+      it { should_not be_started }
+      it { should_not be_startable }
+      context "when trying to make a move" do
+        context "with first move" do
+          let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
+          specify { subject.add_move(first_move).should be_false }
+          it { should  be_valid  }
+          its("moves.size") { should be 0 } 
+          its(:current_player) { should be player1 } 
+        end
+      end
+    end
   end
 
   context "with two players" do
