@@ -10,10 +10,11 @@ class Game < ActiveRecord::Base
   end
 
   def start!
+    @state = :started if startable?
   end
 
   def started?
-    true
+    @state == :started
   end
 
   def board

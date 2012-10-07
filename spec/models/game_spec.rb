@@ -25,7 +25,7 @@ describe Game do
       it { should_not be_startable }
       context "when trying to make a move" do
         context "with first move" do
-          let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
+          let!(:first_move) { FactoryGirl.create(:move, :user => subject.first_player, :x=> 0, :y => 0)  }
           specify { subject.add_move(first_move).should be_false }
           it { should  be_valid  }
           its("moves.size") { should be 0 } 

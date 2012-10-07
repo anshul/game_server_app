@@ -1,5 +1,7 @@
 Iamgame2::Application.routes.draw do
 
+  resources :moves
+
   devise_for :users
 
   resources :games
