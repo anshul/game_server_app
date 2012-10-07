@@ -35,7 +35,7 @@ class Game < ActiveRecord::Base
   end
 
   def valid_move?(move)
-    move_within_bounds?(move) 
+    move_within_bounds?(move) && (move.user == current_player)
   end
 
   def move_within_bounds?(move)

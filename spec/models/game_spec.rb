@@ -6,7 +6,7 @@ describe Game do
   let!(:player2) { FactoryGirl.create(:user) }
   it { should have_many :moves }
   it { should have_and_belong_to_many :users}
-  
+
   context "with zero players" do
     subject { FactoryGirl.build(:game) }
     it { should_not be_valid }
@@ -52,21 +52,31 @@ describe Game do
         context "with first valid move" do
           let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
           specify { subject.add_move(first_move).should be_true }
-          before(:each) { subject.add_move(first_move) }
-          it { should  be_valid  }
-          its("moves.size") { should be 1 } 
-          its(:current_player) { should be player2 } 
-          it { should_not be_complete }
-          its(:winner) { should  be_nil }
-          its(:result) { should be_nil }
+          context "when added" do
+            before(:each) { subject.add_move(first_move) }
+            it { should  be_valid  }
+            its("moves.size") { should be 1 } 
+            its(:current_player) { should be player2 } 
+            it { should_not be_complete }
+            its(:winner) { should  be_nil }
+            its(:result) { should be_nil }
+          end
         end
 
         context "with first invalid move" do
           let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 6, :y => 6)  }
           specify { subject.add_move(first_move).should be_false }
-          before(:each) { subject.add_move(first_move) }
-          it { should  be_valid  }
-          its("moves.size") { should be 0 } 
+          context "when added" do
+            before(:each) { subject.add_move(first_move) }
+            it { should  be_valid  }
+            its("moves.size") { should be 0 } 
+            its(:current_player) { should be player1 } 
+          end
+        end
+
+        context "with wrong players move" do
+          let!(:first_move) { FactoryGirl.create(:move, :user => player2, :x=> 0, :y => 0)  }
+          specify { subject.add_move(first_move).should be_false }
           its(:current_player) { should be player1 } 
         end
       end
@@ -89,6 +99,13 @@ describe Game do
       specify { subject.move_within_bounds?(good_move).should be_true }
       specify { subject.move_within_bounds?(bad_move).should be_false}
       specify { subject.move_within_bounds?(another_bad_move).should be_false}
+    end
+    context "with reference to players" do
+      before(:each) { subject.stub(:current_player).and_return(player1) }
+      let!(:good_move) { FactoryGirl.build(:move, :user => player1, :x => 2, :y => 2) }
+      let!(:bad_move) { FactoryGirl.build(:move, :user => player2, :x => 2, :y => 2) }
+      specify { subject.valid_move?(good_move).should be_true }
+      specify { subject.valid_move?(bad_move).should be_false}
     end
   end
 
