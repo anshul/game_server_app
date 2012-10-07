@@ -6,12 +6,16 @@ class Game < ActiveRecord::Base
   validate :validate_user_count
 
   def winner
+    other_player = ([first_player, second_player] - [current_player]).first
+    return other_player if moves.where(:user_id => other_player.id).winning_moves?
+    return nil
   end
 
   def result
   end
 
   def complete?
+    winner
   end
 
   def startable?
@@ -35,11 +39,16 @@ class Game < ActiveRecord::Base
   end
 
   def valid_move?(move)
-    move_within_bounds?(move) && (move.user == current_player)
+    move_within_bounds?(move) && (move.user == current_player) && !duplicate_move?(move)
   end
 
   def move_within_bounds?(move)
     (0..2).include?(move.x) && (0..2).include?(move.y)
+  end
+  
+  def duplicate_move?(move)
+    return false if moves.empty?
+    moves.where(:x => move.x, :y => move.y).any?
   end
 
   def current_player

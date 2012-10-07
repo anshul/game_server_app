@@ -4,6 +4,8 @@ describe Game do
 
   let!(:player1) { FactoryGirl.create(:user) }
   let!(:player2) { FactoryGirl.create(:user) }
+  let(:started_game) { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2 ; g.start! }}
+
   it { should have_many :moves }
   it { should have_and_belong_to_many :users}
 
@@ -15,7 +17,7 @@ describe Game do
   context "with one player" do
     subject { FactoryGirl.build(:game).tap { |g| g.users <<  player1  } }
     it { should be_valid }
-    its(:first_player) { should be_a User }
+    its(:first_player) { should be player1 }
     its(:second_player) { should be_nil}
     it { should_not be_startable }
     context "when trying to start" do
@@ -42,7 +44,7 @@ describe Game do
     it { should be_startable }
 
     context "when it has started" do
-      subject { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2 ; g.start! }}
+      subject { started_game }
       it { should be_valid }
       it { should be_started }
       it { should_not be_startable }
@@ -81,6 +83,20 @@ describe Game do
         end
       end
     end
+    
+    context "completed game" do
+      subject { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2 ; g.start! }}
+      before(:all) do
+        subject.add_move(FactoryGirl.create(:move, :user => player1, :x => 0, :y => 0))
+        subject.add_move(FactoryGirl.create(:move, :user => player2, :x => 1, :y => 1))
+        subject.add_move(FactoryGirl.create(:move, :user => player1, :x => 1, :y => 0))
+        subject.add_move(FactoryGirl.create(:move, :user => player2, :x => 2, :y => 2))
+        subject.add_move(FactoryGirl.create(:move, :user => player1, :x => 2, :y => 0))
+      end
+      it { should be_complete }
+      its(:winner) { should be player1 }
+    end
+
 
   end
 
@@ -107,6 +123,15 @@ describe Game do
       specify { subject.valid_move?(good_move).should be_true }
       specify { subject.valid_move?(bad_move).should be_false}
     end
+    context "with reference to duplicate moves" do
+      subject { started_game }
+      let!(:good_move) { FactoryGirl.build(:move, :user => player1, :x => 2, :y => 2) }
+      let!(:bad_move) { FactoryGirl.build(:move, :user => player2, :x => 2, :y => 2) }
+      before :all do
+        subject.add_move(good_move)
+      end
+      specify { subject.valid_move?(bad_move).should be_false}
+    end  
   end
 
 end

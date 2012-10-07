@@ -66,6 +66,10 @@ class GamesController < ApplicationController
         format.html { render action: "edit" }
         format.json { render json: @game.errors, status: :unprocessable_entity }
       end
+
+
+
+
     end
   end
 
