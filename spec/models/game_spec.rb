@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Game do
 
+  let!(:player1) { FactoryGirl.create(:user) }
+  let!(:player2) { FactoryGirl.create(:user) }
+  it { should have_many :moves }
+  it { should have_and_belong_to_many :users}
   
   describe "#board" do
     subject { FactoryGirl.build(:game).board}
@@ -14,7 +18,7 @@ describe Game do
   end
 
   context "with one player" do
-    subject { FactoryGirl.build(:game).tap { |g| 1.times { g.users <<  FactoryGirl.create(:user) } } }
+    subject { FactoryGirl.build(:game).tap { |g| g.users <<  player1  } }
     it { should be_valid }
     its(:first_player) { should be_a User }
     its(:second_player) { should be_nil}
@@ -25,19 +29,17 @@ describe Game do
       it { should_not be_startable }
       context "when trying to make a move" do
         context "with first move" do
-          let!(:first_move) { FactoryGirl.create(:move, :user => subject.first_player, :x=> 0, :y => 0)  }
+          let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
           specify { subject.add_move(first_move).should be_false }
           it { should  be_valid  }
           its("moves.size") { should be 0 } 
-          its(:current_player) { should be player1 } 
+          its(:current_player) { should be player1} 
         end
       end
     end
   end
 
   context "with two players" do
-    let!(:player1) { FactoryGirl.create(:user) }
-    let!(:player2) { FactoryGirl.create(:user) }
     subject { FactoryGirl.build(:game).tap { |g| g.users << player1 ; g.users << player2  }}
     it { should be_valid }
     its(:first_player) { should be player1 }

@@ -1,10 +1,21 @@
 class Game < ActiveRecord::Base
   # attr_accessible :title, :body
   has_and_belongs_to_many :users
+  has_many :moves
 
   validate :validate_user_count
 
+  def winner
+  end
+
+  def result
+  end
+
+  def complete?
+  end
+
   def startable?
+    return false if started?
     return true if users.size == 2
     false
   end
@@ -15,6 +26,15 @@ class Game < ActiveRecord::Base
 
   def started?
     @state == :started
+  end
+
+  def add_move(move)
+    return false unless started?
+    moves << move
+  end
+
+  def current_player
+    moves.size.even? ? first_player : second_player
   end
 
   def board
@@ -33,5 +53,6 @@ class Game < ActiveRecord::Base
     errors.add(:users, "Too many users.") if users.size > 2
     errors.add(:users, "Too few users.") if users.empty?
   end
+
 
 end
