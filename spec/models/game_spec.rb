@@ -7,11 +7,6 @@ describe Game do
   it { should have_many :moves }
   it { should have_and_belong_to_many :users}
   
-  describe "#board" do
-    subject { FactoryGirl.build(:game).board}
-    it { should be_a Board }
-    it { should be_empty}
-  end
   context "with zero players" do
     subject { FactoryGirl.build(:game) }
     it { should_not be_valid }
@@ -53,8 +48,10 @@ describe Game do
       it { should_not be_startable }
       its(:current_player) { should be player1 }
       context "when moves are made" do
-        context "with first move" do
+
+        context "with first valid move" do
           let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 0, :y => 0)  }
+          specify { subject.add_move(first_move).should be_true }
           before(:each) { subject.add_move(first_move) }
           it { should  be_valid  }
           its("moves.size") { should be 1 } 
@@ -62,6 +59,15 @@ describe Game do
           it { should_not be_complete }
           its(:winner) { should  be_nil }
           its(:result) { should be_nil }
+        end
+
+        context "with first invalid move" do
+          let!(:first_move) { FactoryGirl.create(:move, :user => player1, :x=> 6, :y => 6)  }
+          specify { subject.add_move(first_move).should be_false }
+          before(:each) { subject.add_move(first_move) }
+          it { should  be_valid  }
+          its("moves.size") { should be 0 } 
+          its(:current_player) { should be player1 } 
         end
       end
     end
@@ -73,5 +79,17 @@ describe Game do
     it { should_not be_valid }
   end
 
+  context "when dealing with moves" do
+    context "with reference to bounds" do
+      let!(:move) { FactoryGirl.build(:move, :x => 0, :y => 0) }
+      let!(:good_move) { FactoryGirl.build(:move, :x => 2, :y => 2) }
+      let!(:bad_move) { FactoryGirl.build(:move, :x => 3, :y => 3) }
+      let!(:another_bad_move) { FactoryGirl.build(:move, :x => -1, :y => -1) }
+      specify { subject.move_within_bounds?(move).should be_true }
+      specify { subject.move_within_bounds?(good_move).should be_true }
+      specify { subject.move_within_bounds?(bad_move).should be_false}
+      specify { subject.move_within_bounds?(another_bad_move).should be_false}
+    end
+  end
 
 end

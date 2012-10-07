@@ -30,15 +30,20 @@ class Game < ActiveRecord::Base
 
   def add_move(move)
     return false unless started?
+    return false unless valid_move?(move)
     moves << move
+  end
+
+  def valid_move?(move)
+    move_within_bounds?(move) 
+  end
+
+  def move_within_bounds?(move)
+    (0..2).include?(move.x) && (0..2).include?(move.y)
   end
 
   def current_player
     moves.size.even? ? first_player : second_player
-  end
-
-  def board
-    Board.new
   end
 
   def first_player 

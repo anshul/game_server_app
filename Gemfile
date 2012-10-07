@@ -22,6 +22,6 @@ group :development, :test do
   gem 'factory_girl_rails'
   gem 'shoulda-matchers'
   gem 'spork'
-  #gem "autotest"
-  #gem "autotest-notification"
+  gem "autotest"
+  gem "autotest-notification"
 end
